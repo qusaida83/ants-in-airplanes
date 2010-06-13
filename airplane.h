@@ -5,6 +5,10 @@ struct airplane{
 	int earliest_lt;
 	int target_lt;
 	int latest_lt;
-	int cost_before;
-	int cost_after;
+	float cost_before;
+	float cost_after;
 };
+
+struct airplane * airplanes;
+int planes_n;
+int ** separation_time;
