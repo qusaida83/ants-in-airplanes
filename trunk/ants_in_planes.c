@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include "parser.c"
 
 /*
@@ -12,31 +13,70 @@
  */
 
 
-long int max_pherormone = 0;
+unsigned long int max_pherormone = 0;
+unsigned long int arch_heuristic_value = 0;
+unsigned long int ** pherormone_matrix;
+unsigned short int ants_n = 0;
+unsigned short int starting_plane = 0;
 
 void setup_parameters(){
-	int i;
+	unsigned short int i,j;
+
+	//setup for randomic numbers
+	srand(time(NULL));
 
 	//setup max_pherormone
-	long int max_late;
-	long int max_early;
+	unsigned long int max_late = 0;
+	unsigned long int max_early = 0;
+	unsigned int delta_time = 0;
 	for(i=0;i<planes_n;i++){
-		max_late = airplanes[i].latest_lt * airplanes[i].cost_after;
-		max_early = airplanes[i].earliest_lt * airplanes[i].cost_before;
+		delta_time = airplanes[i].latest_lt - airplanes[i].target_lt;
+		max_late = delta_time * airplanes[i].cost_after;
+		max_early = delta_time * airplanes[i].cost_before;
 		if(max_late > max_early)
 			max_pherormone += max_late;
 		else
 			max_pherormone += max_early;
 	}
 
+	//setup default arch value
+	arch_heuristic_value = (max_pherormone * 90)/100;
+	
+	//setup the pherormone matrix; It has no pherormones,
+	//so only the heuristic value is used
+	pherormone_matrix = (unsigned long int **)malloc(sizeof(long int *)*planes_n);
+	for(i=0; i<planes_n; i++)
+		pherormone_matrix[i] = (long int *)malloc(sizeof(long int)*planes_n);
+
+	for(i=0; i<planes_n; i++)
+		for(j=0; j<planes_n; j++)
+			pherormone_matrix[i][j] = arch_heuristic_value;
+
+	//setup number of ants
+	ants_n = planes_n/2;
+
+	//setup starting plane
+	starting_plane = rand()%planes_n ;
 
 }
 
 void print_setup(){
 	puts("===SETUP DATA===");
 	printf("max_pherormone = %d\n", max_pherormone);
-}
+	printf("arch_heuristic_value = %d\n", arch_heuristic_value);
+	printf("ants_n = %d\n", ants_n);
+	printf("starting_plane = %d\n", starting_plane);
 
+	int i,j;
+	puts("pherormone_matrix:");
+	for(i = 0; i< planes_n ; i++){
+		for(j = 0 ; j < planes_n ; j++){
+			printf("%.5d ",pherormone_matrix[i][j]);
+		}
+		puts("");
+	}
+	puts("");
+}
 
 
 
