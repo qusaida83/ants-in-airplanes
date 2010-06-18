@@ -19,6 +19,12 @@ unsigned long int ** pherormone_matrix;
 unsigned short int ants_n = 0;
 unsigned short int starting_plane = 0;
 
+
+critical_error(const char * e){
+	fprintf(stderr, "Critical error: %s\n", e);
+	exit(1);
+}
+
 void setup_parameters(){
 	unsigned short int i,j;
 
@@ -28,8 +34,10 @@ void setup_parameters(){
 	//setup max_pherormone
 	unsigned long int max_late = 0;
 	unsigned long int max_early = 0;
+	unsigned long int last_max_pherormone = 0; //used to check for overflow
 	unsigned int delta_time = 0;
 	for(i=0;i<planes_n;i++){
+		last_max_pherormone = max_pherormone;
 		delta_time = airplanes[i].latest_lt - airplanes[i].target_lt;
 		max_late = delta_time * airplanes[i].cost_after;
 		max_early = delta_time * airplanes[i].cost_before;
@@ -37,7 +45,12 @@ void setup_parameters(){
 			max_pherormone += max_late;
 		else
 			max_pherormone += max_early;
+
+		if(last_max_pherormone > max_pherormone)
+			critical_error("Overflow at defining max pherormone");
 	}
+	if((2*max_pherormone) < max_pherormone)
+		critical_error("max pherormone may overflow on the usage.");
 
 	//setup default arch value
 	arch_heuristic_value = (max_pherormone * 90)/100;
