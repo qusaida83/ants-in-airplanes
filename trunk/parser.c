@@ -77,10 +77,11 @@ void print_extracted_data(){
 
 	puts("");
 	puts("====Matriz====");
-	for(i = 0; i< planes_n; i++){
-		for(j = 0 ; j < planes_n; j++){
+	for(i = 0; i< planes_n ; i++){
+		for(j = 0 ; j < planes_n ; j++){
 			printf("%.5d ",separation_time[i][j]);
 		}
 		puts("");
 	}
+	puts("");
 }
