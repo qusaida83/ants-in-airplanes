@@ -1,114 +1,170 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+
+#include "common.c"
+#include "ant.h"
+#include "airplane.h"
 #include "parser.c"
+#include "setup.c"
+
 
 /*
- * setup parameters()
- *
- * This function setup the parameters needed to apply the ACO.
- * The parameters are:
- * 	number of ants
- * 	pheromone 
+ * arguably the main function of the program. It describes how
+ * ants walk through the graph. 
  */
 
+generate_solutions(){
+	int i,j,k,l;
+	int planes_visited = 0;
+	int current_plane = starting_plane;
+	printf("Current plane = %d\n",current_plane);
 
-unsigned long long int max_pheromone = 0;
-unsigned long int edge_heuristic_value = 0;
-unsigned long int ** pheromone_matrix;
-unsigned short int ants_n = 0;
-unsigned short int starting_plane = 0;
+	int best_early_time = airplanes[current_plane].target_lt-1;
+	int best_late_time = airplanes[current_plane].target_lt+1;
+	int target_time = airplanes[current_plane].target_lt;
+	int occuped_late_time = 0;
+	int occuped_early_time = 0;
+	int invalid_solution = 0;
+
+	//be ready for the magic.
+	//
+	//Note: fotanus, tree years from now, 
+	//don't try to understand; just rewrite.
+	//
+	//you were warned.
+	for(i=0; i<ants_n; i++){ //for each ant
+		while(planes_visited < planes_n){ //for each plane
+			for(k=0; k<planes_n; k++){ // for each other plane ...
+				if( ants[i].visited_planes[k] > 0){ // ... that was already visited
+
+					//some alias to help 
+					occuped_early_time = ants[i].visited_planes[k] - separation_time[current_plane][k];
+					occuped_late_time = ants[i].visited_planes[k] + separation_time[current_plane][k];
 
 
-critical_error(const char * e){
-	fprintf(stderr, "Critical error: %s\n", e);
-	exit(1);
-}
+					//case 1: the plane analized landed after the current target landing time
+					if( airplanes[current_plane].target_lt > ants[i].visited_planes[k]){
+						best_early_time = occuped_late_time;
+						if( best_early_time != -1){
 
-void setup_parameters(){
-	unsigned short int i,j;
+							if(occuped_early_time > best_early_time)
+								best_early_time = occuped_early_time;
 
-	//setup for randomic numbers
-	srand(time(NULL));
+							if(best_early_time > airplanes[current_plane].target_lt){
+								target_time = -1;
+								best_early_time = -1;
+							}
+						}
+						if(best_early_time == -1){
+							if( best_early_time > best_late_time)
+								best_late_time = best_early_time;
+						}
+					}
 
-	//setup max_pheromone
-	//TODO: review? 
-	//update: works for airplan9.txt
-	unsigned long int max_late = 0;
-	unsigned long int max_early = 0;
-	unsigned long long int last_max_pheromone = 0; //used to check for overflow
-	unsigned int delta_time = 0;
-	for(i=0;i<planes_n;i++){
-		last_max_pheromone = max_pheromone;
+					//case 2: the plane analized landed before the current target landing time
+					else if( airplanes[current_plane].target_lt < ants[i].visited_planes[k]){
+						if( best_late_time != -1){
 
-		delta_time = airplanes[i].latest_lt - airplanes[i].target_lt;
-		max_late = delta_time * airplanes[i].cost_after;
-		delta_time = airplanes[i].target_lt - airplanes[i].earliest_lt;
-		max_early = delta_time * airplanes[i].cost_before;
+							if(occuped_late_time < best_late_time)
+								best_late_time = occuped_early_time;
 
-		if(max_late > max_early)
-			max_pheromone += max_late;
-		else
-			max_pheromone += max_early;
+							if(best_late_time < airplanes[current_plane].target_lt){
+								target_time = -1;
+								best_late_time = -1;
+							}
+						}
+						if(best_late_time == -1){
+							if( best_late_time < best_early_time)
+								best_early_time = best_late_time;
+						}
+					}
+					//case 3: the plane analized landed EXACTLY on the current target landing time
+					else{
+						if(best_early_time != -1)
+							best_early_time = occuped_early_time;
+						if(best_late_time != -1)
+							best_late_time = occuped_late_time;
+						target_time = -1;
+					}
+				}
 
-		if(last_max_pheromone > max_pheromone)
-			critical_error("Overflow at defining max pheromone");
-	}
-	if((max_pheromone*max_pheromone) < max_pheromone)
-		critical_error("max pheromone may overflow on the usage.");
 
-	//setup default edge value
-	edge_heuristic_value = (max_pheromone * 90)/100;
-	
-	//setup the pheromone matrix; It has no pheromones,
-	//so only the heuristic value is used
-	pheromone_matrix = (unsigned long int **)malloc(sizeof(long int *)*planes_n);
-	for(i=0; i<planes_n; i++)
-		pheromone_matrix[i] = (long int *)malloc(sizeof(long int)*planes_n);
+			}
+			//decides what is the best solution for this plane
+			//
+			if(target_time != -1) //can use target time
+				ants[i].visited_planes[current_plane] = target_time;
+			else if(best_early_time != -1)
+				if(best_late_time != -1) //need to choose between early and late
+					if((target_time - best_early_time) * airplanes[current_plane].cost_before <
+					   (best_late_time - target_time) * airplanes[current_plane].cost_after)
+						ants[i].visited_planes[current_plane] = best_early_time;
+					else 
+						ants[i].visited_planes[current_plane] = best_late_time;
+				else //can only pick early
+					ants[i].visited_planes[current_plane] = best_early_time;
+			else if(best_late_time != -1) //can only pick late
+				ants[i].visited_planes[current_plane] = best_late_time;
+			else{ //solution was invalid
+				puts("Nooo! Invalid solution!!");
+				invalid_solution = 1;
+				break;
+			}
 
-	for(i=0; i<planes_n; i++)
-		for(j=0; j<planes_n; j++)
-			pheromone_matrix[i][j] = edge_heuristic_value;
+			printf("Ant%d: For the plane %d I've choosed the time %d.\n",i,current_plane, ants[i].visited_planes[current_plane]);
+			++planes_visited;
 
-	//setup number of ants
-	ants_n = planes_n/2;
+			int next_plane;
+			if(planes_visited < planes_n){
+				do{
+					current_plane = rand() % planes_n ;
+				} while(ants[i].visited_planes[current_plane] != 0);
 
-	//setup starting plane
-	starting_plane = rand() % planes_n ;
+				best_early_time = airplanes[current_plane].target_lt-1;
+				best_late_time = airplanes[current_plane].target_lt+1;
+				target_time = airplanes[current_plane].target_lt;
+			}
 
-}
-
-void print_setup(){
-	puts("===SETUP DATA===");
-	printf("max_pheromone = %d\n", max_pheromone);
-	printf("edge_heuristic_value = %d\n", edge_heuristic_value);
-	printf("ants_n = %d\n", ants_n);
-	printf("starting_plane = %d\n", starting_plane);
-
-	int i,j;
-	puts("pheromone_matrix:");
-	for(i = 0; i< planes_n ; i++){
-		for(j = 0 ; j < planes_n ; j++){
-			printf("%d ",pheromone_matrix[i][j]);
 		}
-		puts("");
+
+		if(invalid_solution == 0){
+			//calculate the solution
+			for(j=0; j<planes_n; j++){
+				if(ants[i].visited_planes[j] < airplanes[j].target_lt)
+					ants[i].solution += (airplanes[j].target_lt - ants[i].visited_planes[j]) * airplanes[j].cost_before;
+				else if(ants[i].visited_planes[j] > airplanes[j].target_lt)
+					ants[i].solution += (ants[i].visited_planes[j] - airplanes[j].target_lt ) * airplanes[j].cost_after;
+			}
+			printf("Ant%i: My solution was %d!\n",i,ants[i].solution);
+		}
+
+		if(invalid_solution == 1)
+			i--; //same ant try again
+
+		//setup environment for next ant
+		planes_visited = 0;
+		invalid_solution = 0;
+		current_plane = starting_plane;
+		best_early_time = airplanes[current_plane].target_lt-1;
+		best_late_time = airplanes[current_plane].target_lt+1;
+		target_time = airplanes[current_plane].target_lt;
 	}
-	puts("");
+
 }
-
-
-
-
-
 int main(int argc, const char *argv[]){
-	parser("instance/airland1.txt");
+	parser("instance/airland9.txt");
 	print_extracted_data();
 
 	setup_parameters();
 	print_setup();
+
+	generate_solutions();
+	puts("end");
 /*
 	while(not_end()){
 		generate_solutions();
 		refresh_pheromone();
-	}*/
+	}
+*/
 }

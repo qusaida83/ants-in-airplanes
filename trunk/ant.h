@@ -1,5 +1,6 @@
 
 struct ant{
-	unsigned short int * path;
+	unsigned short int * visited_planes;
 	unsigned int solution;
 };
+
