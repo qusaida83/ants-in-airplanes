@@ -14,6 +14,9 @@ void setup_parameters(){
 	//setup for randomic numbers
 	srand(time(NULL));
 
+	//setup number of turns without improvement to end
+	turns_without_improve_to_end = 10;
+
 	//setup max_pheromone
 	//TODO: review? 
 	//update: works for airplan9.txt
@@ -43,6 +46,10 @@ void setup_parameters(){
 	//setup default edge value
 	edge_heuristic_value = (max_pheromone * 90)/100;
 	
+	//setup default edge value
+	pheromone_evap_rate = (max_pheromone * 5)/100;
+
+	best_global_solution = max_pheromone;
 	//setup the pheromone matrix; It has no pheromones,
 	//so only the heuristic value is used
 	pheromone_matrix = (unsigned long int **)malloc(sizeof(long int *)*planes_n);
@@ -63,9 +70,11 @@ void setup_parameters(){
 	ants = (struct ant *)malloc(sizeof(struct ant)*ants_n);
 	for(i=0; i<ants_n; i++){
 		ants[i].solution = 0; //forces an overflow to be the lowest possible.
-		ants[i].visited_planes= (short int *)malloc(sizeof(short int)*planes_n);
+		ants[i].planes_lt= (short int *)malloc(sizeof(short int)*planes_n);
+		ants[i].planes_path = (short int *)malloc(sizeof(short int)*planes_n);
 		for(j=0; j<planes_n; j++){
-			ants[i].visited_planes[j] = 0;
+			ants[i].planes_lt[j] = 0;
+			ants[i].planes_path[j] = 0;
 		}
 	}
 
@@ -91,9 +100,9 @@ void print_setup(){
 	for(i = 0; i< ants_n ; i++){
 		printf("Ant %d:\n",i);
 		printf("\tSolution = %d\n",ants[i].solution);
-		printf("\tvisited_planes:\n");
+		printf("\tplanes_lt:\n");
 		for(j = 0 ; j < planes_n ; j++)
-			printf("\t\tavião %d:%d\n",j, ants[i].visited_planes[j]);
+			printf("\t\tavião %d:%d\n",j, ants[i].planes_lt[j]);
 	}
 	puts("");
 }
