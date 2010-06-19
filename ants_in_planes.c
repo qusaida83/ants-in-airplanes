@@ -13,9 +13,9 @@
  */
 
 
-unsigned long int max_pherormone = 0;
-unsigned long int arch_heuristic_value = 0;
-unsigned long int ** pherormone_matrix;
+unsigned long long int max_pheromone = 0;
+unsigned long int edge_heuristic_value = 0;
+unsigned long int ** pheromone_matrix;
 unsigned short int ants_n = 0;
 unsigned short int starting_plane = 0;
 
@@ -31,60 +31,65 @@ void setup_parameters(){
 	//setup for randomic numbers
 	srand(time(NULL));
 
-	//setup max_pherormone
+	//setup max_pheromone
+	//TODO: review? 
+	//update: works for airplan9.txt
 	unsigned long int max_late = 0;
 	unsigned long int max_early = 0;
-	unsigned long int last_max_pherormone = 0; //used to check for overflow
+	unsigned long long int last_max_pheromone = 0; //used to check for overflow
 	unsigned int delta_time = 0;
 	for(i=0;i<planes_n;i++){
-		last_max_pherormone = max_pherormone;
+		last_max_pheromone = max_pheromone;
+
 		delta_time = airplanes[i].latest_lt - airplanes[i].target_lt;
 		max_late = delta_time * airplanes[i].cost_after;
+		delta_time = airplanes[i].target_lt - airplanes[i].earliest_lt;
 		max_early = delta_time * airplanes[i].cost_before;
+
 		if(max_late > max_early)
-			max_pherormone += max_late;
+			max_pheromone += max_late;
 		else
-			max_pherormone += max_early;
+			max_pheromone += max_early;
 
-		if(last_max_pherormone > max_pherormone)
-			critical_error("Overflow at defining max pherormone");
+		if(last_max_pheromone > max_pheromone)
+			critical_error("Overflow at defining max pheromone");
 	}
-	if((2*max_pherormone) < max_pherormone)
-		critical_error("max pherormone may overflow on the usage.");
+	if((max_pheromone*max_pheromone) < max_pheromone)
+		critical_error("max pheromone may overflow on the usage.");
 
-	//setup default arch value
-	arch_heuristic_value = (max_pherormone * 90)/100;
+	//setup default edge value
+	edge_heuristic_value = (max_pheromone * 90)/100;
 	
-	//setup the pherormone matrix; It has no pherormones,
+	//setup the pheromone matrix; It has no pheromones,
 	//so only the heuristic value is used
-	pherormone_matrix = (unsigned long int **)malloc(sizeof(long int *)*planes_n);
+	pheromone_matrix = (unsigned long int **)malloc(sizeof(long int *)*planes_n);
 	for(i=0; i<planes_n; i++)
-		pherormone_matrix[i] = (long int *)malloc(sizeof(long int)*planes_n);
+		pheromone_matrix[i] = (long int *)malloc(sizeof(long int)*planes_n);
 
 	for(i=0; i<planes_n; i++)
 		for(j=0; j<planes_n; j++)
-			pherormone_matrix[i][j] = arch_heuristic_value;
+			pheromone_matrix[i][j] = edge_heuristic_value;
 
 	//setup number of ants
 	ants_n = planes_n/2;
 
 	//setup starting plane
-	starting_plane = rand()%planes_n ;
+	starting_plane = rand() % planes_n ;
 
 }
 
 void print_setup(){
 	puts("===SETUP DATA===");
-	printf("max_pherormone = %d\n", max_pherormone);
-	printf("arch_heuristic_value = %d\n", arch_heuristic_value);
+	printf("max_pheromone = %d\n", max_pheromone);
+	printf("edge_heuristic_value = %d\n", edge_heuristic_value);
 	printf("ants_n = %d\n", ants_n);
 	printf("starting_plane = %d\n", starting_plane);
 
 	int i,j;
-	puts("pherormone_matrix:");
+	puts("pheromone_matrix:");
 	for(i = 0; i< planes_n ; i++){
 		for(j = 0 ; j < planes_n ; j++){
-			printf("%.5d ",pherormone_matrix[i][j]);
+			printf("%d ",pheromone_matrix[i][j]);
 		}
 		puts("");
 	}
