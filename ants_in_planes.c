@@ -234,7 +234,7 @@ generate_solutions(){
 
 			++planes_visited;
 			if(planes_visited < planes_n){
-				long long int prob_sum=0;
+				unsigned long long int prob_sum=0;
 				for(j=0; j<planes_n; j++){
 					if(ants[i].planes_lt[j] == 0){
 						//printf("planes visited = %d\n",ants[i].planes_path[planes_visited]);
@@ -242,7 +242,6 @@ generate_solutions(){
 						prob_sum += (pheromone_matrix[ants[i].planes_path[planes_visited-1]][j]);
 					}
 				}
-				printf("prob_sum = %d\n",prob_sum);
 				long long int ticket =  rand() % prob_sum;
 				for(j=0; j<planes_n; j++){
 					if(ants[i].planes_lt[j] == 0){
@@ -273,7 +272,7 @@ void refresh_pheromone(){
 	for(i=0; i<ants_n; i++){
 		pheromone = max_pheromone - ants[i].solution;
 		for(j=1; j<planes_n; j++){
-			pheromone_matrix[j-1][j] += pheromone;
+			pheromone_matrix[ants[i].planes_path[j-1]][ants[i].planes_path[j]] += pheromone;
 		}
 	}
 
