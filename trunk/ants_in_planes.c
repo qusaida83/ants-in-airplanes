@@ -32,7 +32,9 @@ void ant_talks(int i){
 	for(j=0; j<planes_n; j++){
 		printf("\tPlane %d",ants[i].planes_path[j]);
 		if( ants[i].planes_lt[j] == airplanes[j].target_lt)
-			printf(" - And it was in target time!");
+			printf(" - And it was in target time %d!",airplanes[j].target_lt);
+		else
+			printf(" - Landed at time %d!",ants[i].planes_lt[j]);
 		puts("");
 	}
 	printf("Ant %d salutes and was dispensed\n\n", i);
@@ -149,6 +151,7 @@ generate_solutions(){
 				range.last_read_pos+=2;
 
 			}
+			free(range.ranges);
 			range.last_read_pos = 0;
 
 
@@ -254,6 +257,7 @@ generate_solutions(){
 				}
 			}
 
+			free(possible_times);
 			if (impossible_solution == 1){
 				i--; //return one ant
 				break;
@@ -270,7 +274,7 @@ void refresh_pheromone(){
 
 	//puts the new pheromone
 	for(i=0; i<ants_n; i++){
-		pheromone = max_pheromone - ants[i].solution;
+		pheromone = max_pheromone - (ants[i].solution);
 		for(j=1; j<planes_n; j++){
 			pheromone_matrix[ants[i].planes_path[j-1]][ants[i].planes_path[j]] += pheromone;
 		}
@@ -290,11 +294,19 @@ int not_end(){
 
 	//define best solution on round
 	for(i=0; i<ants_n; i++)
-		if(ants[i].solution < max_solution_round)
-			max_solution_round = ants[i].solution;
+		if(ants[i].solution < max_solution_round){
+			if(ants[i].solution >= 0){
+				max_solution_round = ants[i].solution;
+				if(max_solution_round < 700){
+					ant_talks(i);
+					exit(1);
+				}
+			}
+		}
 
 	//check if had improvement
 	if(max_solution_round < best_global_solution){
+		printf("Changing solution form %llu to %llu",best_global_solution,max_solution_round);
 		best_global_solution = max_solution_round;
 		turns_without_improve = 0;
 	}
@@ -319,7 +331,8 @@ int main(int argc, const char *argv[]){
 	do{
 		generate_solutions();
 		refresh_pheromone();
+		printf("solução parcial: %llu\n",best_global_solution);
 	}while(not_end());
-	printf("Melhor solução: %d\n",best_global_solution);
+	printf("Melhor solução: %llu\n",best_global_solution);
 
 }
