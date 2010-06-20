@@ -91,12 +91,13 @@ generate_solutions(){
 				} // end to analize the conflict time with this plane.
 			}
 
+			/*
 			puts("RANGE:");
 			for(j=0; j<range.num_elem; j++){
 				printf("%d - %d\n" ,range.ranges[range.last_read_pos], range.ranges[range.last_read_pos+1]);
 				range.last_read_pos +=2;
 			}
-			range.last_read_pos =0;
+			range.last_read_pos =0;*/
 
 			// at this point, we have all ranges that we can't land this plane.
 			// | ---- N ----- |      //the plane we must decide the landing time
@@ -114,29 +115,50 @@ generate_solutions(){
 			
 			//for each range, fills the impossible times
 			for(j=0; j<range.num_elem; j++){
-				for(k=range.ranges[range.last_read_pos]-airplanes[current_plane].earliest_lt; 
-						k < range.ranges[range.last_read_pos+1]-airplanes[current_plane].earliest_lt; 
-						k++){
-					possible_times[k] = '1';
-					range.last_read_pos+=2;
-				}
-			}
+				int for_init;
+				int for_end;
 
-			//for each range, fills the impossible times
-			for(j=0; j<range.num_elem; j++){
-				for(k=range.ranges[range.last_read_pos]; k < range.ranges[range.last_read_pos+1]; k++){
-					possible_times[k] = '1';
-					range.last_read_pos+=2;
+				if( range.ranges[range.last_read_pos+1] < airplanes[current_plane].earliest_lt) {
+					for_init=0;
+					for_end = -1;
+					//out of scope
+				}else if(range.ranges[range.last_read_pos] > airplanes[current_plane].latest_lt){
+					for_init=0;
+					for_end = -1;
+					//out of scope
+				}else{
+					if(range.ranges[range.last_read_pos] > airplanes[current_plane].earliest_lt){
+						for_init = range.ranges[range.last_read_pos] - airplanes[current_plane].earliest_lt;
+					}else{
+						for_init = 0;
+					}
+					if(range.ranges[range.last_read_pos+1] < airplanes[current_plane].latest_lt){
+						for_end = range.ranges[range.last_read_pos+1] - airplanes[current_plane].earliest_lt;
+					}else{
+						for_end = possible_times_size;
+					}
 				}
-			}
+				/*
+				printf("Target time do current: %d\n", airplanes[current_plane].target_lt);
+				printf("Range: %d --- %d\n", range.ranges[range.last_read_pos], range.ranges[range.last_read_pos+1]);
+				printf("For range: %d --- %d\n", for_init, for_end);
+				*/
+						
+				for(k=for_init; k<for_end; k++)
+					possible_times[k]='1';
+				range.last_read_pos+=2;
 
-			//debugueeeee
-			puts("BiteMape!");
+			}
+			range.last_read_pos = 0;
+
+
+			/*
+			puts("Bitmap:");
 			for (j = 0; j < possible_times_size; j++) {
 				printf("%c",possible_times[j]);
 			}
 			puts("");
-			
+			*/
 			//decide best time, setting both the land time for this plane
 			//and add in the solution value
 			int target_pos = airplanes[current_plane].target_lt - airplanes[current_plane].earliest_lt;
@@ -154,7 +176,7 @@ generate_solutions(){
 				while( find == 0){
 					--iterator;
 					if(iterator >= 0){
-						if(possible_times[iterator] == '1'){
+						if(possible_times[iterator] == '0'){
 							find = 1;
 							early_pos = iterator;
 						}
@@ -165,11 +187,12 @@ generate_solutions(){
 					}
 				}
 
+				iterator = target_pos;
 				//look late
 				while( find == 0){
 					++iterator;
 					if(iterator < possible_times_size){
-						if(possible_times[iterator] == '1'){
+						if(possible_times[iterator] == '0'){
 							find = 1;
 							late_pos = iterator;
 						}
@@ -180,37 +203,56 @@ generate_solutions(){
 					}
 				}
 
+				//printf("Solução da formiga %d: %d\n",i,ants[i].solution);
 				//impossible
 				if( (late_pos == -1) && (early_pos == -1)){
 					impossible_solution = 1;
 					break;
 				}
+				
 				else if((late_pos != -1) && (early_pos == -1)){
 					ants[i].planes_lt[current_plane] = late_pos + airplanes[current_plane].earliest_lt;
-					ants[i].solution += ants[i].planes_lt[current_plane] * airplanes[current_plane].cost_after;
+					ants[i].solution += ( ants[i].planes_lt[current_plane] - airplanes[current_plane].target_lt ) * airplanes[current_plane].cost_after;
+
 				}else if((late_pos == -1) && (early_pos != -1)){
 					ants[i].planes_lt[current_plane] = early_pos + airplanes[current_plane].earliest_lt;
-					ants[i].solution += ants[i].planes_lt[current_plane] * airplanes[current_plane].cost_before;
+					ants[i].solution += ( airplanes[current_plane].target_lt - ants[i].planes_lt[current_plane]) * airplanes[current_plane].cost_before;
 				}else{
 					int late_real_pos = late_pos + airplanes[current_plane].earliest_lt;
 					int early_real_pos = early_pos + airplanes[current_plane].earliest_lt;
 
-					if(late_real_pos > early_real_pos){
+					if(late_real_pos < early_real_pos){
 						ants[i].planes_lt[current_plane] = late_pos + airplanes[current_plane].earliest_lt;
-						ants[i].solution += ants[i].planes_lt[current_plane] * airplanes[current_plane].cost_after;
+						ants[i].solution += ( ants[i].planes_lt[current_plane] - airplanes[current_plane].target_lt ) * airplanes[current_plane].cost_after;
 					}else{
 						ants[i].planes_lt[current_plane] = early_pos + airplanes[current_plane].earliest_lt;
-						ants[i].solution += ants[i].planes_lt[current_plane] * airplanes[current_plane].cost_before;
+						ants[i].solution += ( airplanes[current_plane].target_lt - ants[i].planes_lt[current_plane]) * airplanes[current_plane].cost_before;
 					}
 				}
 
 			}
+
 			++planes_visited;
 			if(planes_visited < planes_n){
-				do{
-					current_plane =  rand() % planes_n ;
-					
-				}while(ants[i].planes_lt[current_plane] != 0);
+				long long int prob_sum=0;
+				for(j=0; j<planes_n; j++){
+					if(ants[i].planes_lt[j] == 0){
+						//printf("planes visited = %d\n",ants[i].planes_path[planes_visited]);
+						//printf("planes visited-1 = %d\n",ants[i].planes_path[planes_visited-1]);
+						prob_sum += (pheromone_matrix[ants[i].planes_path[planes_visited-1]][j]);
+					}
+				}
+				printf("prob_sum = %d\n",prob_sum);
+				long long int ticket =  rand() % prob_sum;
+				for(j=0; j<planes_n; j++){
+					if(ants[i].planes_lt[j] == 0){
+						ticket -= (pheromone_matrix[ants[i].planes_path[planes_visited-1]][j]);
+						if (ticket < 0){
+							current_plane = j;
+							break;
+						}
+					}
+				}
 			}
 
 			if (impossible_solution == 1){
@@ -219,7 +261,7 @@ generate_solutions(){
 			}
 
 		}// close visited planes
-		ant_talks(i);
+		//ant_talks(i);
 	}//close ants
 }
 
@@ -254,7 +296,6 @@ int not_end(){
 
 	//check if had improvement
 	if(max_solution_round < best_global_solution){
-		puts("CHANGES");
 		best_global_solution = max_solution_round;
 		turns_without_improve = 0;
 	}
@@ -274,13 +315,12 @@ int main(int argc, const char *argv[]){
 	//print_extracted_data();
 
 	setup_parameters();
-	generate_solutions();
 	//print_setup();
-/*
-	while(not_end()){
+
+	do{
 		generate_solutions();
 		refresh_pheromone();
-	}
+	}while(not_end());
 	printf("Melhor solução: %d\n",best_global_solution);
-	*/
+
 }
