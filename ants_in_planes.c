@@ -16,7 +16,7 @@
 
 void initialize_ant(int ant_n){
 	int i;
-	ants[ant_n].solution = max_pheromone;
+	ants[ant_n].solution = 0;
 	for(i=0; i<planes_n; i++){
 		ants[ant_n].planes_path[i]=0;
 		ants[ant_n].planes_lt[i]=0;
@@ -29,18 +29,33 @@ void ant_talks(int i){
 	printf("Ant %d reports:\n",i);
 	printf("Ant%d: My solution was %d!\n",i,ants[i].solution);
 	printf("Ant%d: I did the following path:\n",i);
-	for(j=0; j<planes_n; j++)
-		printf("\tPlane %d\n",ants[i].planes_path[j]);
-	printf("Ant %d salutes and was dispensed\n\n");
+	for(j=0; j<planes_n; j++){
+		printf("\tPlane %d",ants[i].planes_path[j]);
+		if( ants[i].planes_lt[j] == airplanes[j].target_lt)
+			printf(" - And it was in target time!");
+		puts("");
+	}
+	printf("Ant %d salutes and was dispensed\n\n", i);
+}
+
+struct ranges_list{
+	int num_elem;
+	int last_written_pos;
+	int last_read_pos;
+	int * ranges;
+};
+
+init_range_list(struct ranges_list * r){
+	r->num_elem = 0;
+	r->last_written_pos = 0;
+	r->last_read_pos = 0;
+	r->ranges = (int *)malloc(sizeof(int)*planes_n*2);
 }
 
 
 generate_solutions(){
 	puts("====NEW ROUND====");
-	int i,j,k,l;
-
-	int occuped_late_time = 0; //this two variables must always be set before used. They are
-	int occuped_early_time = 0;//just alias to help readability. 
+	int i,j,k;
 
 	//be ready for the magic.
 	//
@@ -53,130 +68,159 @@ generate_solutions(){
 		//setup environment for next ant
 		initialize_ant(i);
 		unsigned short int planes_visited = 0;
-		unsigned char invalid_solution = 0;
 		unsigned short int current_plane = starting_plane;
-		unsigned int best_early_time = airplanes[current_plane].target_lt-1;
-		unsigned int best_late_time = airplanes[current_plane].target_lt+1;
-		unsigned int target_time = airplanes[current_plane].target_lt;
+		char impossible_solution = 0;
 
 		while(planes_visited < planes_n){ //for each plane
+			struct ranges_list range;
+			init_range_list(&range);
 
 			ants[i].planes_path[planes_visited] = current_plane; //keeps the trace of visited planes.
 
-			for(k=0; k<planes_n; k++){ // for each other plane ...
-				if( ants[i].planes_lt[k] > 0){ // ... that was already visited
+			//gets all ranges from already landed planes.
+			for(j=0; j<planes_n; j++){ // for each other plane ...
+				if( ants[i].planes_lt[j] > 0){ // ... that was already visited
 
 					//some alias to help
-					//delimites the range which the plane can't land.
-					occuped_early_time = ants[i].planes_lt[k] - separation_time[current_plane][k];
-					occuped_late_time = ants[i].planes_lt[k] + separation_time[current_plane][k];
+					int min_range = ants[i].planes_lt[j] - separation_time[current_plane][j];
+					int max_range = ants[i].planes_lt[j] + separation_time[current_plane][j];
+					range.ranges[range.last_written_pos] = min_range;
+					range.ranges[range.last_written_pos+1] = max_range;
+					range.last_written_pos += 2;
+					range.num_elem++;
+				} // end to analize the conflict time with this plane.
+			}
 
-					//case 1: the plane analized landed before the current target landing time
-					if( airplanes[current_plane].target_lt > ants[i].planes_lt[k]){
-						if( best_early_time != -1){
-							if(occuped_late_time > best_early_time)
-								best_early_time = occuped_late_time;
+			puts("RANGE:");
+			for(j=0; j<range.num_elem; j++){
+				printf("%d - %d\n" ,range.ranges[range.last_read_pos], range.ranges[range.last_read_pos+1]);
+				range.last_read_pos +=2;
+			}
+			range.last_read_pos =0;
 
-							//this checks for overflow; i.e. when the analized plane landing time
-							//get to or trespass the current plane target landing time.
-							if(best_early_time == airplanes[current_plane].target_lt)
-								best_early_time = -1;
-							else if(best_early_time > airplanes[current_plane].target_lt){
-								target_time = -1;
-								best_early_time = -1;
-							}
-						}
-						if(best_early_time == -1){
-							if( occuped_late_time > best_late_time)
-								best_late_time = occuped_late_time;
+			// at this point, we have all ranges that we can't land this plane.
+			// | ---- N ----- |      //the plane we must decide the landing time
+			//   |-1-|     |--2---|  //the already landed planes ranges that restrict our landing time
+			// |-|   |-----|         //possible landing range.
+
+
+
+			// initialize a vector that describes the possible landing times
+			int possible_times_size = airplanes[current_plane].latest_lt - airplanes[current_plane].earliest_lt;
+			char * possible_times = (char *)malloc(sizeof(char) * possible_times_size );
+			for (j = 0; j < possible_times_size; j++) {
+				possible_times[j] = '0';
+			}
+			
+			//for each range, fills the impossible times
+			for(j=0; j<range.num_elem; j++){
+				for(k=range.ranges[range.last_read_pos]-airplanes[current_plane].earliest_lt; 
+						k < range.ranges[range.last_read_pos+1]-airplanes[current_plane].earliest_lt; 
+						k++){
+					possible_times[k] = '1';
+					range.last_read_pos+=2;
+				}
+			}
+
+			//for each range, fills the impossible times
+			for(j=0; j<range.num_elem; j++){
+				for(k=range.ranges[range.last_read_pos]; k < range.ranges[range.last_read_pos+1]; k++){
+					possible_times[k] = '1';
+					range.last_read_pos+=2;
+				}
+			}
+
+			//debugueeeee
+			puts("BiteMape!");
+			for (j = 0; j < possible_times_size; j++) {
+				printf("%c",possible_times[j]);
+			}
+			puts("");
+			
+			//decide best time, setting both the land time for this plane
+			//and add in the solution value
+			int target_pos = airplanes[current_plane].target_lt - airplanes[current_plane].earliest_lt;
+			if(possible_times[target_pos] == '0'){
+				//if possible, gets the target landing time.
+				ants[i].planes_lt[current_plane] = airplanes[current_plane].target_lt;
+			}
+			else{
+				char find=0;
+				int late_pos;
+				int early_pos;
+				int iterator = target_pos;
+
+				//look early
+				while( find == 0){
+					--iterator;
+					if(iterator >= 0){
+						if(possible_times[iterator] == '1'){
+							find = 1;
+							early_pos = iterator;
 						}
 					}
-
-					//case 2: the plane analized landed after the current target landing time
-					else if( airplanes[current_plane].target_lt < ants[i].planes_lt[k]){
-						if( best_late_time != -1){
-
-							if(occuped_late_time < best_late_time)
-								best_late_time = occuped_early_time;
-
-							if(best_late_time < airplanes[current_plane].target_lt){
-								target_time = -1;
-								best_late_time = -1;
-							}
-						}
-						if(best_late_time == -1){
-							if( best_late_time < best_early_time)
-								best_early_time = best_late_time;
-						}
-					}
-
-					//case 3: the plane analized landed EXACTLY on the current target landing time
 					else{
-						if(best_early_time != -1)
-							best_early_time = occuped_early_time;
-						if(best_late_time != -1)
-							best_late_time = occuped_late_time;
-						target_time = -1;
+						early_pos = -1;
+						break;
 					}
-				} // end if was visited
-			} // end to analize the conflict time with this plane.
+				}
 
-			//at this point, for the current_plane, all other planes that
-			//had the landing time already decided were checked.
+				//look late
+				while( find == 0){
+					++iterator;
+					if(iterator < possible_times_size){
+						if(possible_times[iterator] == '1'){
+							find = 1;
+							late_pos = iterator;
+						}
+					}
+					else{
+						late_pos = -1;
+						break;
+					}
+				}
 
-			//decides what is the best solution for this plane
-			if(target_time != -1) //can use target time
-				ants[i].planes_lt[current_plane] = target_time;
-			else if(best_early_time != -1)
-				if(best_late_time != -1) //need to choose between early and late
-					if((target_time - best_early_time) * airplanes[current_plane].cost_before <
-					   (best_late_time - target_time) * airplanes[current_plane].cost_after)
-						ants[i].planes_lt[current_plane] = best_early_time;
-					else 
-						ants[i].planes_lt[current_plane] = best_late_time;
-				else //can only pick early
-					ants[i].planes_lt[current_plane] = best_early_time;
-			else if(best_late_time != -1) //can only pick late
-				ants[i].planes_lt[current_plane] = best_late_time;
-			else{ //solution was invalid
-				printf("Ant%d: Nooo! Invalid solution! I want to be dispensed!\n",i);
-				invalid_solution = 1;
+				//impossible
+				if( (late_pos == -1) && (early_pos == -1)){
+					impossible_solution = 1;
+					break;
+				}
+				else if((late_pos != -1) && (early_pos == -1)){
+					ants[i].planes_lt[current_plane] = late_pos + airplanes[current_plane].earliest_lt;
+					ants[i].solution += ants[i].planes_lt[current_plane] * airplanes[current_plane].cost_after;
+				}else if((late_pos == -1) && (early_pos != -1)){
+					ants[i].planes_lt[current_plane] = early_pos + airplanes[current_plane].earliest_lt;
+					ants[i].solution += ants[i].planes_lt[current_plane] * airplanes[current_plane].cost_before;
+				}else{
+					int late_real_pos = late_pos + airplanes[current_plane].earliest_lt;
+					int early_real_pos = early_pos + airplanes[current_plane].earliest_lt;
+
+					if(late_real_pos > early_real_pos){
+						ants[i].planes_lt[current_plane] = late_pos + airplanes[current_plane].earliest_lt;
+						ants[i].solution += ants[i].planes_lt[current_plane] * airplanes[current_plane].cost_after;
+					}else{
+						ants[i].planes_lt[current_plane] = early_pos + airplanes[current_plane].earliest_lt;
+						ants[i].solution += ants[i].planes_lt[current_plane] * airplanes[current_plane].cost_before;
+					}
+				}
+
+			}
+			++planes_visited;
+			if(planes_visited < planes_n){
+				do{
+					current_plane =  rand() % planes_n ;
+					
+				}while(ants[i].planes_lt[current_plane] != 0);
+			}
+
+			if (impossible_solution == 1){
+				i--; //return one ant
 				break;
 			}
 
-			//printf("Ant%d: For the plane %d I've choosed the time %d.\n",i,current_plane, ants[i].planes_lt[current_plane]);
-			++planes_visited;
-
-			int next_plane;
-			if(planes_visited < planes_n){
-				do{
-					//TODO: Add ferormonies and heuristical 
-					current_plane = rand() % planes_n ;
-				} while(ants[i].planes_lt[current_plane] != 0);
-
-				best_early_time = airplanes[current_plane].target_lt-1;
-				best_late_time = airplanes[current_plane].target_lt+1;
-				target_time = airplanes[current_plane].target_lt;
-			}
-
-		}
-
-		//if the solutions is valid, calculate stuff
-		if(invalid_solution == 0){
-			for(j=0; j<planes_n; j++){
-				if(ants[i].planes_lt[j] < airplanes[j].target_lt)
-					ants[i].solution += (airplanes[j].target_lt - ants[i].planes_lt[j]) * airplanes[j].cost_before;
-				else if(ants[i].planes_lt[j] > airplanes[j].target_lt)
-					ants[i].solution += (ants[i].planes_lt[j] - airplanes[j].target_lt ) * airplanes[j].cost_after;
-				//else is the target landing time and don't chaes the solution
-			}
-			ant_talks(i);
-		}
-		else
-			--i; //same ant try again
-
-	}
-
+		}// close visited planes
+		ant_talks(i);
+	}//close ants
 }
 
 void refresh_pheromone(){
@@ -230,11 +274,13 @@ int main(int argc, const char *argv[]){
 	//print_extracted_data();
 
 	setup_parameters();
+	generate_solutions();
 	//print_setup();
-
+/*
 	while(not_end()){
 		generate_solutions();
 		refresh_pheromone();
 	}
 	printf("Melhor solução: %d\n",best_global_solution);
+	*/
 }
