@@ -43,6 +43,7 @@ void setup_parameters(){
 	if((max_pheromone*max_pheromone) < max_pheromone)
 		critical_error("max pheromone may overflow on the usage.");
 
+	max_pheromone = max_pheromone;
 	//setup default edge value
 	edge_heuristic_value = (max_pheromone * 90)/100;
 	
