@@ -83,8 +83,8 @@ void setup_parameters(){
 
 void print_setup(){
 	puts("===SETUP DATA===");
-	printf("max_pheromone = %d\n", max_pheromone);
-	printf("edge_heuristic_value = %d\n", edge_heuristic_value);
+	printf("max_pheromone = %llu\n", max_pheromone);
+	printf("edge_heuristic_value = %lu\n", edge_heuristic_value);
 	printf("ants_n = %d\n", ants_n);
 	printf("starting_plane= %d\n", starting_plane);
 
@@ -92,7 +92,7 @@ void print_setup(){
 	puts("pheromone_matrix:");
 	for(i = 0; i< planes_n ; i++){
 		for(j = 0 ; j < planes_n ; j++){
-			printf("%d ",pheromone_matrix[i][j]);
+			printf("%lu ",pheromone_matrix[i][j]);
 		}
 		puts("");
 	}
@@ -100,7 +100,7 @@ void print_setup(){
 	puts("ants:");
 	for(i = 0; i< ants_n ; i++){
 		printf("Ant %d:\n",i);
-		printf("\tSolution = %d\n",ants[i].solution);
+		printf("\tSolution = %llu\n",ants[i].solution);
 		printf("\tplanes_lt:\n");
 		for(j = 0 ; j < planes_n ; j++)
 			printf("\t\tavião %d:%d\n",j, ants[i].planes_lt[j]);
