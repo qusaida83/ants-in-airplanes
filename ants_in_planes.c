@@ -142,8 +142,8 @@ generate_solutions(){
 				printf("Range: %d --- %d\n", range.ranges[range.last_read_pos], range.ranges[range.last_read_pos+1]);
 				printf("For range: %d --- %d\n", for_init, for_end);
 				*/
-						
-				for(k=for_init; k<for_end; k++)
+				//printf("For init: %d   | for end: %d\n",for_init,for_end);
+				for(k=for_init; k<=for_end; k++)
 					possible_times[k]='1';
 				range.last_read_pos+=2;
 
@@ -158,6 +158,7 @@ generate_solutions(){
 			}
 			puts("");
 			*/
+
 			//decide best time, setting both the land time for this plane
 			//and add in the solution value
 			int target_pos = airplanes[current_plane].target_lt - airplanes[current_plane].earliest_lt;
@@ -187,6 +188,7 @@ generate_solutions(){
 				}
 
 				iterator = target_pos;
+				find = 0;
 				//look late
 				while( find == 0){
 					++iterator;
@@ -202,6 +204,7 @@ generate_solutions(){
 					}
 				}
 
+				//printf("Early = %d, Late = %d\n",early_pos,late_pos);
 				//printf("Solução da formiga %d: %d\n",i,ants[i].solution);
 				//impossible
 				if( (late_pos == -1) && (early_pos == -1)){
@@ -307,7 +310,6 @@ int not_end(){
 
 	//check if had improvement
 	if(max_solution_round < best_global_solution){
-		printf("Changing solution form %llu to %llu",best_global_solution,max_solution_round);
 		best_global_solution = max_solution_round;
 		turns_without_improve = 0;
 	}
@@ -323,7 +325,7 @@ int not_end(){
 
 
 int main(int argc, const char *argv[]){
-	parser("instance/airland1.txt");
+	parser("instance/airland8.txt");
 	print_extracted_data();
 
 	setup_parameters();
