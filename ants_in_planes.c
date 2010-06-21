@@ -21,20 +21,19 @@ void initialize_ant(int ant_n){
 		ants[ant_n].planes_path[i]=0;
 		ants[ant_n].planes_lt[i]=0;
 	}
-
 }
 
 void ant_talks(int i){
 	int j;
 	printf("Ant %d reports:\n",i);
-	printf("Ant%d: My solution was %d!\n",i,ants[i].solution);
+	printf("Ant%d: My solution was %llu!\n",i,ants[i].solution);
 	printf("Ant%d: I did the following path:\n",i);
 	for(j=0; j<planes_n; j++){
 		printf("\tPlane %d",ants[i].planes_path[j]);
-		if( ants[i].planes_lt[j] == airplanes[j].target_lt)
-			printf(" - And it was in target time %d!",airplanes[j].target_lt);
+		if( ants[i].planes_lt[ants[i].planes_path[j]] == airplanes[ants[i].planes_path[j]].target_lt)
+			printf(" - And it was in target time %d!",airplanes[ants[i].planes_path[j]].target_lt);
 		else
-			printf(" - Landed at time %d!",ants[i].planes_lt[j]);
+			printf(" - Landed at time %d!",ants[i].planes_lt[ants[i].planes_path[j]]);
 		puts("");
 	}
 	printf("Ant %d salutes and was dispensed\n\n", i);
@@ -99,17 +98,15 @@ generate_solutions(){
 				printf("%d - %d\n" ,range.ranges[range.last_read_pos], range.ranges[range.last_read_pos+1]);
 				range.last_read_pos +=2;
 			}
-			range.last_read_pos =0;*/
-
+			range.last_read_pos =0;
+			*/
 			// at this point, we have all ranges that we can't land this plane.
 			// | ---- N ----- |      //the plane we must decide the landing time
 			//   |-1-|     |--2---|  //the already landed planes ranges that restrict our landing time
 			// |-|   |-----|         //possible landing range.
 
-
-
 			// initialize a vector that describes the possible landing times
-			int possible_times_size = airplanes[current_plane].latest_lt - airplanes[current_plane].earliest_lt;
+			int possible_times_size = airplanes[current_plane].latest_lt - airplanes[current_plane].earliest_lt + 1;
 			char * possible_times = (char *)malloc(sizeof(char) * possible_times_size );
 			for (j = 0; j < possible_times_size; j++) {
 				possible_times[j] = '0';
@@ -153,7 +150,6 @@ generate_solutions(){
 			}
 			free(range.ranges);
 			range.last_read_pos = 0;
-
 
 			/*
 			puts("Bitmap:");
@@ -210,7 +206,6 @@ generate_solutions(){
 				//impossible
 				if( (late_pos == -1) && (early_pos == -1)){
 					impossible_solution = 1;
-					break;
 				}
 				
 				else if((late_pos != -1) && (early_pos == -1)){
@@ -245,6 +240,12 @@ generate_solutions(){
 						prob_sum += (pheromone_matrix[ants[i].planes_path[planes_visited-1]][j]);
 					}
 				}
+				if(prob_sum == 0){
+					printf("Max pheromone = %llu\n",max_pheromone);
+					printf("Planes visited = %d\n",planes_visited);
+					ant_talks(i);
+					exit(1);
+				}
 				long long int ticket =  rand() % prob_sum;
 				for(j=0; j<planes_n; j++){
 					if(ants[i].planes_lt[j] == 0){
@@ -258,13 +259,13 @@ generate_solutions(){
 			}
 
 			free(possible_times);
-			if (impossible_solution == 1){
-				i--; //return one ant
-				break;
-			}
 
 		}// close visited planes
 		//ant_talks(i);
+		if (impossible_solution == 1){
+			puts("returning to ant");
+			i--; //return one ant
+		}
 	}//close ants
 }
 
@@ -297,10 +298,10 @@ int not_end(){
 		if(ants[i].solution < max_solution_round){
 			if(ants[i].solution >= 0){
 				max_solution_round = ants[i].solution;
-				if(max_solution_round < 700){
+/*				if(max_solution_round < 700){
 					ant_talks(i);
 					exit(1);
-				}
+				}*/
 			}
 		}
 
@@ -323,7 +324,7 @@ int not_end(){
 
 int main(int argc, const char *argv[]){
 	parser("instance/airland1.txt");
-	//print_extracted_data();
+	print_extracted_data();
 
 	setup_parameters();
 	//print_setup();
