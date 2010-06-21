@@ -236,18 +236,30 @@ generate_solutions(){
 			++planes_visited;
 			if(planes_visited < planes_n){
 				unsigned long long int prob_sum=0;
+				int entrou = 0;
+				unsigned long long int ultima = 0;
 				for(j=0; j<planes_n; j++){
 					if(ants[i].planes_lt[j] == 0){
 						//printf("planes visited = %d\n",ants[i].planes_path[planes_visited]);
 						//printf("planes visited-1 = %d\n",ants[i].planes_path[planes_visited-1]);
 						prob_sum += (pheromone_matrix[ants[i].planes_path[planes_visited-1]][j]);
+						ultima =  (pheromone_matrix[ants[i].planes_path[planes_visited-1]][j]);
 					}
 				}
 				if(prob_sum == 0){
+					impossible_solution = 1; // just belive it
+					break;
+					/*
+					printf("Entrou %d vezes\n",entrou);
+					if(entrou_uma_vez==1){
+						puts("Ja foi impossivel");
+					}
+					printf("ultima: %llu \n",ultima);
 					printf("Max pheromone = %llu\n",max_pheromone);
 					printf("Planes visited = %d\n",planes_visited);
 					ant_talks(i);
 					exit(1);
+					*/
 				}
 				long long int ticket =  rand() % prob_sum;
 				for(j=0; j<planes_n; j++){
@@ -266,6 +278,7 @@ generate_solutions(){
 		}// close visited planes
 		//ant_talks(i);
 		if (impossible_solution == 1){
+			entrou_uma_vez = 1;
 			puts("returning to ant");
 			i--; //return one ant
 		}
@@ -325,7 +338,7 @@ int not_end(){
 
 
 int main(int argc, const char *argv[]){
-	parser("instance/airland8.txt");
+	parser("instance/airland4.txt");
 	print_extracted_data();
 
 	setup_parameters();

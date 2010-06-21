@@ -14,6 +14,7 @@ struct ant * ants;
 struct airplane * airplanes;
 int planes_n;
 int ** separation_time;
+int entrou_uma_vez = 0;
 
 critical_error(const char * e){
 	fprintf(stderr, "Critical error: %s\n", e);
