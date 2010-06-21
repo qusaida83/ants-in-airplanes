@@ -62,7 +62,7 @@ void setup_parameters(){
 			pheromone_matrix[i][j] = edge_heuristic_value;
 
 	//setup number of ants
-	ants_n = planes_n*10;
+	ants_n = planes_n*2;
 
 	//setup starting plane
 	starting_plane = rand() % planes_n ;
