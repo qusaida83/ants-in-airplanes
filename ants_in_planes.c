@@ -55,7 +55,7 @@ init_range_list(struct ranges_list * r){
 
 
 generate_solutions(){
-	puts("====NEW ROUND====");
+	//puts("====NEW ROUND====");
 	int i,j,k;
 
 	//be ready for the magic.
@@ -324,6 +324,7 @@ int not_end(){
 	//check if had improvement
 	if(max_solution_round < best_global_solution){
 		best_global_solution = max_solution_round;
+		printf("solução parcial: %llu\n",best_global_solution);
 		turns_without_improve = 0;
 	}
 	else
@@ -338,8 +339,8 @@ int not_end(){
 
 
 int main(int argc, const char *argv[]){
-	parser("instance/airland4.txt");
-	print_extracted_data();
+	parser("instance/airland1.txt");
+	//print_extracted_data();
 
 	setup_parameters();
 	//print_setup();
@@ -347,7 +348,6 @@ int main(int argc, const char *argv[]){
 	do{
 		generate_solutions();
 		refresh_pheromone();
-		printf("solução parcial: %llu\n",best_global_solution);
 	}while(not_end());
 	printf("Melhor solução: %llu\n",best_global_solution);
 
