@@ -1,0 +1,34 @@
+#
+# Airplanes problem
+
+set P := 1..2;
+/* Airplanes */
+
+param E{ P };
+param L{ P };
+param T{ P };
+
+param g{ P };
+
+var d {i in 1..P, j in 1..P} binary;
+var a { P };
+var b { P };
+var x { P };
+
+minimize M: sum {i in P} g[i]*a[i] + sum{i in P} h[i]*b[i];
+subject to S1 {i in P}: E[i] <= x[i];
+subject to S2 {i in P}: x[i] <= L[i];
+subject to S3 {i in P, j in P}: d[i,j] + d[j,i] = 1; # | i!=j;
+subject to S4 {i in P, j in P}: x[j] >= x[i] + S[i,j] - (L[i] + S[i,j] - E[j])*d[j,i]; # | i!=j;
+subject to S5 {i in P}: a[i] >= T[i] - x[i];
+subject to S6 {i in P}: a[i] <= T[i] - E[i];
+subject to S7 {i in P}: b[i] >= x[i] - T[i];
+subject to S8 {i in P}: b[i] <= L[i] - T[i];
+subject to S9 {i in P}: x[i] = T[i] - a[i] + b[i];
+
+subject to S10 {i in P}: x[i] >=0;
+subject to S11 {i in P}: a[i] >=0;
+subject to S12 {i in P}: b[i] >=0;
+
+
+
