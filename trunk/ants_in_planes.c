@@ -13,16 +13,16 @@
 #include "aco.c"
 
 int main(){
-	parser("instance/airland1.txt");
+	parser("instance/airland7.txt");
 	//print_extracted_data();
 
 	setup_parameters();
 	//print_setup();
-
 	do{
 		generate_solutions();
 		refresh_pheromone();
 	}while(not_end());
+
 	printf("Melhor solução: %llu\n",best_global_solution);
 	return 0;
 }

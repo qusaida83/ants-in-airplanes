@@ -12,7 +12,7 @@ unsigned short int turns_without_improve = 0;
 unsigned long long int best_global_solution = 0;
 struct ant * ants;
 struct airplane * airplanes;
-int planes_n;
+unsigned int planes_n;
 int ** separation_time;
 int entrou_uma_vez = 0;
 int possible_times_size;
@@ -20,7 +20,7 @@ char * possible_times;
 struct ranges_list range;
 
 unsigned short int planes_visited = 0;
-unsigned short int current_plane;
+unsigned int current_plane;
 char impossible_solution = 0;
 
 void critical_error(const char * e){

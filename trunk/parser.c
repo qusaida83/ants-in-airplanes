@@ -11,7 +11,7 @@ void parser(char * input_file_path){
 
 	puts("Lendo arquivo....");
 	float x;
-	int i;
+	unsigned int i;
 
 	//Firstly we read the number of airplanes and use it to
 	//create basic structure (airplanes and separation_time)
@@ -31,26 +31,25 @@ void parser(char * input_file_path){
 
 	//this block grab data from file and puts in planes structure.
 	//this also fills the separation_time matrix.
-	int current_plane;
-	for(current_plane = 0; current_plane<planes_n; current_plane++){
+	unsigned int j;
+	for(i= 0; i<planes_n; i++){
 		//grab fix data for the plane
 		fscanf(input_file, "%f", &x);
-		airplanes[current_plane].appearance = x;
+		airplanes[i].appearance = x;
 		fscanf(input_file, "%f", &x);
-		airplanes[current_plane].earliest_lt = x;
+		airplanes[i].earliest_lt = x;
 		fscanf(input_file, "%f", &x);
-		airplanes[current_plane].target_lt= x;
+		airplanes[i].target_lt= x;
 		fscanf(input_file, "%f", &x);
-		airplanes[current_plane].latest_lt= x;
+		airplanes[i].latest_lt= x;
 		fscanf(input_file, "%f", &x);
-		airplanes[current_plane].cost_before= x;
+		airplanes[i].cost_before= x;
 		fscanf(input_file, "%f", &x);
-		airplanes[current_plane].cost_after= x;
+		airplanes[i].cost_after= x;
 
 		//fill the first line of the matrix.
-		int i;
-		for(i=0; i<planes_n; i++){
-			fscanf(input_file, "%d",&separation_time[current_plane][i]);
+		for(j=0; j<planes_n; j++){
+			fscanf(input_file, "%d",&separation_time[i][j]);
 		}
 	}
 
@@ -63,13 +62,13 @@ void parser(char * input_file_path){
 //It prints the data retrived from planes.
 
 void print_extracted_data(){
-	int i,j;
+	unsigned int i,j;
 	for(i = 0; i< planes_n; i++){
 		printf("\n\n=====Aviao %d=====\n",i);
 		printf("%d\n",airplanes[i].appearance);
-		printf("%d\n",airplanes[i].earliest_lt);
-		printf("%d\n",airplanes[i].target_lt);
-		printf("%d\n",airplanes[i].latest_lt);
+		printf("%ld\n",airplanes[i].earliest_lt);
+		printf("%ld\n",airplanes[i].target_lt);
+		printf("%ld\n",airplanes[i].latest_lt);
 		printf("%f\n",airplanes[i].cost_before);
 		printf("%f\n",airplanes[i].cost_after);
 	}
