@@ -15,11 +15,8 @@ void setup_parameters(){
 	srand(time(NULL));
 
 	//setup number of turns without improvement to end
-	turns_without_improve_to_end = 100;
 
 	//setup max_pheromone
-	//TODO: review? 
-	//update: works for airplan9.txt
 	unsigned long int max_late = 0;
 	unsigned long int max_early = 0;
 	unsigned long long int last_max_pheromone = 0; //used to check for overflow
@@ -45,10 +42,12 @@ void setup_parameters(){
 
 	max_pheromone = max_pheromone;
 	//setup default edge value
-	edge_heuristic_value = (max_pheromone * 90)/100;
+	edge_heuristic_value = (max_pheromone * 20)/100;
 	
 	//setup default edge value
-	pheromone_evap_rate = (max_pheromone * 5)/100;
+	pheromone_evap_rate = (max_pheromone * 30)/100;
+
+	turns_without_improve_to_end = planes_n*3;
 
 	best_global_solution = max_pheromone;
 	//setup the pheromone matrix; It has no pheromones,
@@ -58,11 +57,15 @@ void setup_parameters(){
 		pheromone_matrix[i] = (long int *)malloc(sizeof(long int)*planes_n);
 
 	for(i=0; i<planes_n; i++)
-		for(j=0; j<planes_n; j++)
-			pheromone_matrix[i][j] = edge_heuristic_value;
+		for(j=0; j<planes_n; j++){
+			int delta = airplanes[i].target_lt - airplanes[j].target_lt;
+			if(delta < 0)
+				delta = delta*-1;
+			pheromone_matrix[i][j] = edge_heuristic_value*delta;
+		}
 
 	//setup number of ants
-	ants_n = planes_n*100;
+	ants_n = planes_n;
 
 	//setup starting plane
 	starting_plane = rand() % planes_n ;

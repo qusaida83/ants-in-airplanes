@@ -15,6 +15,13 @@ struct airplane * airplanes;
 int planes_n;
 int ** separation_time;
 int entrou_uma_vez = 0;
+int possible_times_size;
+char * possible_times;
+struct ranges_list range;
+
+unsigned short int planes_visited = 0;
+unsigned short int current_plane;
+char impossible_solution = 0;
 
 critical_error(const char * e){
 	fprintf(stderr, "Critical error: %s\n", e);
