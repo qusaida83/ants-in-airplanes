@@ -196,34 +196,34 @@ var b{i in P}, >= 0;
 var sigma{i in P, j in P : i != j}, >= 0, <= 1, binary;
 
 
-# bounds
-s.t. window{i in P} :
-  E[i] <= x[i] <= L[i];
-
-s.t. sequence{i in P, j in P : i != j} :
-  sigma[i,j] + sigma[j,i] == 1;
-
-s.t. separation{i in P, j in P : i != j} :
-  x[j] >= x[i] + S[i,j] - (L[i] + S[i,j] - E[j])*sigma[j,i];
-
-s.t. alphatimebound{i in P} :
-  a[i] >= T[i] - x[i];
-
-s.t. alphawindow{i in P} :
-  0 <= a[i] <= T[i] - E[i];
-
-s.t. betatimebound{i in P} :
-  b[i] >= x[i] - T[i];
-
-s.t. betawindow{i in P} :
-  0 <= b[i] <= L[i] - T[i];
-
-s.t. landingtime{i in P} :
-  x[i] == T[i] - a[i] + b[i];
-
-
 # objective
 minimize cost: sum{i in P} (g[i] * a[i] + h[i] * b[i]);
 
+
+
+# bounds
+subject to window{i in P} :
+  E[i] <= x[i] <= L[i];
+
+subject to sequence{i in P, j in P : i != j} :
+  sigma[i,j] + sigma[j,i] == 1;
+
+subject to separation{i in P, j in P : i != j} :
+  x[j] >= x[i] + S[i,j] - (L[i] + S[i,j] - E[j])*sigma[j,i];
+
+subject to alphatimebound{i in P} :
+  a[i] >= T[i] - x[i];
+
+subject to alphawindow{i in P} :
+  0 <= a[i] <= T[i] - E[i];
+
+subject to betatimebound{i in P} :
+  b[i] >= x[i] - T[i];
+
+subject to betawindow{i in P} :
+  0 <= b[i] <= L[i] - T[i];
+
+subject to landingtime{i in P} :
+  x[i] == T[i] - a[i] + b[i];
 
 end;
