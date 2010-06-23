@@ -9,9 +9,10 @@
 #include "setup.c"
 #include "ranges.c"
 #include "possible_times.c"
+#include "pheromone.c"
 #include "aco.c"
 
-int main(int argc, const char *argv[]){
+int main(){
 	parser("instance/airland1.txt");
 	//print_extracted_data();
 
@@ -23,4 +24,5 @@ int main(int argc, const char *argv[]){
 		refresh_pheromone();
 	}while(not_end());
 	printf("Melhor solução: %llu\n",best_global_solution);
+	return 0;
 }

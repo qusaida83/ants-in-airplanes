@@ -23,7 +23,7 @@ unsigned short int planes_visited = 0;
 unsigned short int current_plane;
 char impossible_solution = 0;
 
-critical_error(const char * e){
+void critical_error(const char * e){
 	fprintf(stderr, "Critical error: %s\n", e);
 	exit(1);
 }

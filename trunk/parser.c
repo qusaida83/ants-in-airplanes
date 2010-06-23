@@ -54,7 +54,7 @@ void parser(char * input_file_path){
 		}
 	}
 
-        close(input_file);
+        fclose(input_file);
 }
 
 
