@@ -52,9 +52,9 @@ void setup_parameters(){
 	best_global_solution = max_pheromone;
 	//setup the pheromone matrix; It has no pheromones,
 	//so only the heuristic value is used
-	pheromone_matrix = (unsigned long int **)malloc(sizeof(long int *)*planes_n);
+	pheromone_matrix = (unsigned long int **)malloc(sizeof(unsigned long int *)*planes_n);
 	for(i=0; i<planes_n; i++)
-		pheromone_matrix[i] = (long int *)malloc(sizeof(long int)*planes_n);
+		pheromone_matrix[i] = (unsigned long int *)malloc(sizeof(unsigned long int)*planes_n);
 
 	for(i=0; i<planes_n; i++)
 		for(j=0; j<planes_n; j++){
@@ -74,8 +74,8 @@ void setup_parameters(){
 	ants = (struct ant *)malloc(sizeof(struct ant)*ants_n);
 	for(i=0; i<ants_n; i++){
 		ants[i].solution = 0; //forces an overflow to be the lowest possible.
-		ants[i].planes_lt= (short int *)malloc(sizeof(short int)*planes_n);
-		ants[i].planes_path = (short int *)malloc(sizeof(short int)*planes_n);
+		ants[i].planes_lt= (unsigned short int *)malloc(sizeof(unsigned short int)*planes_n);
+		ants[i].planes_path = (unsigned short int *)malloc(sizeof(unsigned short int)*planes_n);
 		for(j=0; j<planes_n; j++){
 			ants[i].planes_lt[j] = 0;
 			ants[i].planes_path[j] = 0;
@@ -91,7 +91,7 @@ void print_setup(){
 	printf("ants_n = %d\n", ants_n);
 	printf("starting_plane= %d\n", starting_plane);
 
-	int i,j,k;
+	int i,j;
 	puts("pheromone_matrix:");
 	for(i = 0; i< planes_n ; i++){
 		for(j = 0 ; j < planes_n ; j++){

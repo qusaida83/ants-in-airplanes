@@ -6,7 +6,7 @@ struct ranges_list{
 	int * ranges;
 };
 
-init_range_list(){
+void init_range_list(){
 	range.num_elem = 0;
 	range.last_written_pos = 0;
 	range.last_read_pos = 0;
