@@ -40,30 +40,36 @@ void setup_parameters(){
 	if((max_pheromone*max_pheromone) < max_pheromone)
 		critical_error("max pheromone may overflow on the usage.");
 
-	max_pheromone = max_pheromone;
 	//setup default edge value
-	edge_heuristic_value = (max_pheromone * 90)/100;
+	edge_heuristic_value = (max_pheromone * 80)/100;
 	
 	//setup default edge value
-	pheromone_evap_rate = (max_pheromone * 10)/100;
+	pheromone_evap_rate = (max_pheromone * 20)/100;
 
 	//turns without improve is the end criteria 
-	turns_without_improve_to_end = planes_n;
+	turns_without_improve_to_end = planes_n*2;
 
 	best_global_solution = max_pheromone;
 	//setup the pheromone matrix; It has no pheromones,
 	//so only the heuristic value is used
-	pheromone_matrix = (unsigned long int **)malloc(sizeof(unsigned long int *)*planes_n);
+	pheromone_matrix = (unsigned long long int **)malloc(sizeof(unsigned long long int *)*planes_n);
 	for(i=0; i<planes_n; i++)
-		pheromone_matrix[i] = (unsigned long int *)malloc(sizeof(unsigned long int)*planes_n);
+		pheromone_matrix[i] = (unsigned long long int *)malloc(sizeof(unsigned long long int)*planes_n);
 
 	for(i=0; i<planes_n; i++)
 		for(j=0; j<planes_n; j++){
 			pheromone_matrix[i][j] = 0; //airplanes[i].target_lt - airplanes[j].target_lt;
 		}
 
+	heuristic_matrix = (unsigned long long int **)malloc(sizeof(unsigned long long int *)*planes_n);
+	for(i=0; i<planes_n; i++)
+		heuristic_matrix[i] = (unsigned long long int *)malloc(sizeof(unsigned long long int)*planes_n);
+	for(i=0; i<planes_n; i++)
+		for(j=0; j<planes_n; j++){
+			heuristic_matrix[i][j] = edge_heuristic_value ;
+		}
 	//setup number of ants
-	ants_n = planes_n*10;
+	ants_n = planes_n*2;
 
 	//setup starting plane
 	starting_plane = rand() % planes_n ;
@@ -93,7 +99,7 @@ void print_setup(){
 	puts("pheromone_matrix:");
 	for(i = 0; i< planes_n ; i++){
 		for(j = 0 ; j < planes_n ; j++){
-			printf("%lu ",pheromone_matrix[i][j]);
+			printf("%llu ",pheromone_matrix[i][j]);
 		}
 		puts("");
 	}
