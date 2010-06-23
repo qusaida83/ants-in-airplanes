@@ -42,12 +42,13 @@ void setup_parameters(){
 
 	max_pheromone = max_pheromone;
 	//setup default edge value
-	edge_heuristic_value = (max_pheromone * 20)/100;
+	edge_heuristic_value = (max_pheromone * 90)/100;
 	
 	//setup default edge value
-	pheromone_evap_rate = (max_pheromone * 30)/100;
+	pheromone_evap_rate = (max_pheromone * 10)/100;
 
-	turns_without_improve_to_end = planes_n*3;
+	//turns without improve is the end criteria 
+	turns_without_improve_to_end = planes_n;
 
 	best_global_solution = max_pheromone;
 	//setup the pheromone matrix; It has no pheromones,
@@ -58,14 +59,11 @@ void setup_parameters(){
 
 	for(i=0; i<planes_n; i++)
 		for(j=0; j<planes_n; j++){
-			int delta = airplanes[i].target_lt - airplanes[j].target_lt;
-			if(delta < 0)
-				delta = delta*-1;
-			pheromone_matrix[i][j] = edge_heuristic_value*delta;
+			pheromone_matrix[i][j] = 0; //airplanes[i].target_lt - airplanes[j].target_lt;
 		}
 
 	//setup number of ants
-	ants_n = planes_n;
+	ants_n = planes_n*10;
 
 	//setup starting plane
 	starting_plane = rand() % planes_n ;
@@ -74,11 +72,11 @@ void setup_parameters(){
 	ants = (struct ant *)malloc(sizeof(struct ant)*ants_n);
 	for(i=0; i<ants_n; i++){
 		ants[i].solution = 0; //forces an overflow to be the lowest possible.
-		ants[i].planes_lt= (unsigned short int *)malloc(sizeof(unsigned short int)*planes_n);
-		ants[i].planes_path = (unsigned short int *)malloc(sizeof(unsigned short int)*planes_n);
+		ants[i].planes_lt= (long int *)malloc(sizeof(long int)*planes_n);
+		ants[i].planes_path = (unsigned int *)malloc(sizeof(unsigned int)*planes_n);
 		for(j=0; j<planes_n; j++){
-			ants[i].planes_lt[j] = 0;
-			ants[i].planes_path[j] = 0;
+			ants[i].planes_lt[j] = -1;
+			ants[i].planes_path[j] = -1;
 		}
 	}
 
@@ -91,7 +89,7 @@ void print_setup(){
 	printf("ants_n = %d\n", ants_n);
 	printf("starting_plane= %d\n", starting_plane);
 
-	int i,j;
+	unsigned int i,j;
 	puts("pheromone_matrix:");
 	for(i = 0; i< planes_n ; i++){
 		for(j = 0 ; j < planes_n ; j++){
@@ -106,7 +104,7 @@ void print_setup(){
 		printf("\tSolution = %llu\n",ants[i].solution);
 		printf("\tplanes_lt:\n");
 		for(j = 0 ; j < planes_n ; j++)
-			printf("\t\tavião %d:%d\n",j, ants[i].planes_lt[j]);
+			printf("\t\tavião %d:%ld\n",j, ants[i].planes_lt[j]);
 	}
 	puts("");
 }

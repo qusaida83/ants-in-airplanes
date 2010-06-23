@@ -6,9 +6,17 @@ void init_possible_times(){
 	for (j = 0; j < possible_times_size; j++) {
 		possible_times[j] = '0';
 	}
+	/*
+	puts("Bitmap:");
+	for (j = 0; j < possible_times_size; j++) {
+		printf("%c",possible_times[j]);
+	}
+	puts("");
+	*/
 }
 void fill_possible_times(){
-	int j,k;
+	unsigned int j;
+	int k;
 	for(j=0; j<range.num_elem; j++){
 		int for_init;
 		int for_end;
@@ -33,11 +41,9 @@ void fill_possible_times(){
 				for_end = possible_times_size;
 			}
 		}
-		/*
-		printf("Target time do current: %d\n", airplanes[current_plane].target_lt);
-		printf("Range: %d --- %d\n", range.ranges[range.last_read_pos], range.ranges[range.last_read_pos+1]);
-		printf("For range: %d --- %d\n", for_init, for_end);
-		*/
+		
+		//printf("For range: %d --- %d\n", for_init, for_end);
+		
 		//printf("For init: %d   | for end: %d\n",for_init,for_end);
 		for(k=for_init; k<=for_end; k++)
 			possible_times[k]='1';
@@ -50,5 +56,4 @@ void fill_possible_times(){
 	}
 	puts("");
 	*/
-
 }
