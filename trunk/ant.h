@@ -23,7 +23,7 @@ void setup_env(){
 void ant_talks(int i){
 	unsigned int j;
 	printf("Ant %d reports:\n",i);
-	printf("Ant%d: My solution was %llu!\n",i,ants[i].solution);
+	printf("Ant%d: My solution was %lld!\n",i,ants[i].solution);
 	printf("Ant%d: I did the following path:\n",i);
 	for(j=0; j<planes_n; j++){
 		printf("\tPlane %d",ants[i].planes_path[j]);
@@ -89,8 +89,12 @@ void decide_best_land_time(int i){
 		//impossible
 		if( (late_pos == -1) && (early_pos == -1) ){
 			impossible_solution = 1;
-			ants[i].planes_lt[current_plane] = -1;
-			ants[i].planes_path[planes_visited] = -1;
+			int k;
+			for(k=0;k<planes_n;k++){
+				ants[i].planes_lt[current_plane] = -1;
+				ants[i].planes_path[planes_visited] = 0;
+			}
+			ants[i].solution = max_pheromone;
 		}
 		
 		else if((late_pos != -1) && (early_pos == -1)){

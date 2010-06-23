@@ -40,7 +40,7 @@ void generate_solutions(){
 		setup_env();
 
 		while(planes_visited < planes_n){ //for each plane
-			//printf("Current plane: %d\n",current_plane);
+			//printf("Ant%d: Current plane: %d\n",i,current_plane);
 
 			ants[i].planes_path[planes_visited] = current_plane; //keeps the trace of visited planes.
 			++planes_visited;
@@ -51,21 +51,23 @@ void generate_solutions(){
 			init_possible_times();
 			fill_possible_times();
 
+			free(possible_times);
 			free(range.ranges);
 
 			decide_best_land_time(i);
 
+			//ant_talks(i);
 			if(planes_visited < planes_n){
 				choose_next_plane(i);
 			}
 
-			free(possible_times);
 
 		}// close visited planes
 		//ant_talks(i);
 		if (impossible_solution == 1){
-			puts("returning to ant");
-			ants[i].solution = max_pheromone;
+			//puts("returning ant");
+			//ant_talks(i);
+			//getchar();
 			//i--; //return one ant
 		}
 	}//close ants

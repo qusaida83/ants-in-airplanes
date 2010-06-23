@@ -13,7 +13,7 @@
 #include "aco.c"
 
 int main(){
-	parser("instance/airland7.txt");
+	parser("instance/airland8.txt");
 	//print_extracted_data();
 
 	setup_parameters();
