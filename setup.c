@@ -44,7 +44,7 @@ void setup_parameters(){
 	edge_heuristic_value = (max_pheromone * 70)/100;
 
 	//setup default edge value
-	pheromone_evap_rate = (max_pheromone * 40)/100;
+	pheromone_evap_rate = (max_pheromone * 10)/100;
 
 	//turns without improve is the end criteria 
 	turns_without_improve_to_end = planes_n*10;
