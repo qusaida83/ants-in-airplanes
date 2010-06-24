@@ -1,9 +1,10 @@
 void init_possible_times(){
 	int j;
-	possible_times_size = airplanes[current_plane].latest_lt - airplanes[current_plane].earliest_lt + 1;
-	//printf("possible times size = %d\n",possible_times_size);
-	possible_times = (char *)malloc( sizeof(char)*possible_times_size );
-	//puts("alloked");
+	if(possible_times_size < airplanes[current_plane].latest_lt - airplanes[current_plane].earliest_lt + 1){
+		free(possible_times);
+		possible_times_size = airplanes[current_plane].latest_lt - airplanes[current_plane].earliest_lt + 1;
+		possible_times = (char *)malloc( sizeof(char)*possible_times_size );
+	}
 	for (j = 0; j < possible_times_size; j++) {
 		possible_times[j] = '0';
 	}

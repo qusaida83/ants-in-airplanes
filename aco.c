@@ -16,7 +16,8 @@ int not_end(){
 	//check if had improvement
 	if(max_solution_round < best_global_solution){
 		best_global_solution = max_solution_round;
-		printf("solução parcial: %llu\n",best_global_solution);
+		//printf("max_pheromone: %llu\n",max_pheromone);
+		//printf("solução parcial: %llu\n",best_global_solution);
 		turns_without_improve = 0;
 	}
 	else
@@ -51,7 +52,7 @@ void generate_solutions(){
 			init_possible_times();
 			fill_possible_times();
 
-			free(possible_times);
+			//free(possible_times);
 			free(range.ranges);
 
 			decide_best_land_time(i);

@@ -41,13 +41,13 @@ void setup_parameters(){
 		critical_error("max pheromone may overflow on the usage.");
 
 	//setup default edge value
-	edge_heuristic_value = (max_pheromone * 80)/100;
-	
+	edge_heuristic_value = (max_pheromone * 70)/100;
+
 	//setup default edge value
-	pheromone_evap_rate = (max_pheromone * 20)/100;
+	pheromone_evap_rate = (max_pheromone * 40)/100;
 
 	//turns without improve is the end criteria 
-	turns_without_improve_to_end = planes_n*2;
+	turns_without_improve_to_end = planes_n*10;
 
 	best_global_solution = max_pheromone;
 	//setup the pheromone matrix; It has no pheromones,
@@ -66,10 +66,17 @@ void setup_parameters(){
 		heuristic_matrix[i] = (unsigned long long int *)malloc(sizeof(unsigned long long int)*planes_n);
 	for(i=0; i<planes_n; i++)
 		for(j=0; j<planes_n; j++){
-			heuristic_matrix[i][j] = edge_heuristic_value ;
+			if(airplanes[i].target_lt > airplanes[j].target_lt)
+				heuristic_matrix[i][j] = edge_heuristic_value ;//max_pheromone/((airplanes[i].target_lt - airplanes[j].target_lt)*planes_n); //
+			else if (airplanes[i].target_lt < airplanes[j].target_lt)
+				heuristic_matrix[i][j] = edge_heuristic_value ;//max_pheromone/((airplanes[j].target_lt - airplanes[i].target_lt));  //
+			else
+				heuristic_matrix[i][j] =edge_heuristic_value ; //max_pheromone;  //
+
+
 		}
 	//setup number of ants
-	ants_n = planes_n*2;
+	ants_n = planes_n*3;
 
 	//setup starting plane
 	starting_plane = rand() % planes_n ;
